@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird - Retro Edition</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="homeScreen" class="home-screen">
+        <div class="home-content">
+            <div class="title-wrapper">
+                <h1 class="game-title">FLAPPY</h1>
+                <h1 class="game-title subtitle">BIRD</h1>
+            </div>
+            <div class="bird-preview">
+                <img id="previewBird" src="" alt="Your Bird">
+            </div>
+            <button id="playBtn" class="play-btn">
+                <span class="btn-icon">▶</span>
+                PLAY
+            </button>
+            <div class="instructions">
+                TAP or SPACE to Flap
+            </div>
+        </div>
+    </div>
+  
+    <div id="scoreDisplay" class="score-display">0</div>
+
+    <div id="gameOver" class="game-over">
+        <div class="game-over-content">
+            <h2>GAME OVER</h2>
+            <div class="score-section">
+                <div class="current-score">
+                    <span class="score-label">SCORE</span>
+                    <span class="score-value" id="finalScore">0</span>
+                </div>
+                <div class="best-score">
+                    <span class="score-label">BEST</span>
+                    <span class="score-value" id="highScore">0</span>
+                </div>
+            </div>
+            <button id="restartBtn" class="restart-btn">
+                <span class="btn-icon">↻</span>
+                PLAY AGAIN
+            </button>
+            <button id="homeBtn" class="home-btn">
+                <span class="btn-icon">⌂</span>
+                HOME
+            </button>
+        </div>
+    </div>
+ 
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loader-wrapper">
+            <div class="loader"></div>
+        </div>
+        <p>LOADING...</p>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>
