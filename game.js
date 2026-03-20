@@ -30,8 +30,8 @@
         width: 100,
         height: 100,
         velocity: 0,
-        gravity: 0.35,
-        jump: -9,
+        gravity: 0.28,
+        jump: -6,
         rotation: 0,
         scale: 1
     };
@@ -135,23 +135,33 @@
     }
     
     function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        
-        bird.width = Math.min(canvas.width * 0.22, 120);
+        const dpr = window.devicePixelRatio || 1;
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        ctx.scale(dpr, dpr);
+
+        // Use logical pixels for all game calculations
+        canvas.logicalWidth = w;
+        canvas.logicalHeight = h;
+
+        bird.width = Math.min(w * 0.22, 120);
         bird.height = bird.width;
 
-        // Scale jump and gravity to screen height so it feels consistent
-        const isMobile = window.innerWidth <= 768;
-        bird.jump = isMobile ? -(canvas.height * 0.007) : -(canvas.height * 0.011);
-        bird.gravity = isMobile ? canvas.height * 0.0004 : canvas.height * 0.00045;
+        // Fixed feel across all screen sizes
+        bird.jump = -6;
+        bird.gravity = 0.28;
         
-        pipeWidth = Math.min(canvas.width * 0.12, 80);
-        pipeGap = Math.max(canvas.height * 0.32, 190);
+        pipeWidth = Math.min(w * 0.12, 80);
+        pipeGap = Math.max(h * 0.32, 190);
         
         if (gameState === 'home') {
-            bird.x = canvas.width / 2 - bird.width / 2;
-            bird.y = canvas.height * 0.35;
+            bird.x = w / 2 - bird.width / 2;
+            bird.y = h * 0.35;
         }
     }
     
@@ -159,8 +169,8 @@
         clouds = [];
         for (let i = 0; i < 12; i++) {
             clouds.push({
-                x: Math.random() * canvas.width * 1.5,
-                y: Math.random() * canvas.height * 0.35,
+                x: Math.random() * window.innerWidth * 1.5,
+                y: Math.random() * window.innerHeight * 0.35,
                 width: 60 + Math.random() * 80,
                 speed: 0.3 + Math.random() * 0.5,
                 layer: Math.floor(Math.random() * 3) + 1
@@ -170,8 +180,8 @@
         hills = [];
         for (let i = 0; i < 5; i++) {
             hills.push({
-                x: i * canvas.width * 0.5,
-                width: canvas.width * 0.6,
+                x: i * window.innerWidth * 0.5,
+                width: window.innerWidth * 0.6,
                 height: 80 + Math.random() * 120,
                 color: `hsl(${100 + Math.random() * 30}, ${50 + Math.random() * 20}%, ${45 + Math.random() * 15}%)`
             });
@@ -182,8 +192,8 @@
         const starColors = ['#FFD700', '#FF6B6B', '#74b9ff', '#a29bfe', '#55efc4', '#fd79a8'];
         for (let i = 0; i < 25; i++) {
             stars.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height * 0.85,
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight * 0.85,
                 size: 3 + Math.random() * 6,
                 speed: 0.2 + Math.random() * 0.4,
                 opacity: Math.random(),
@@ -225,8 +235,8 @@
         scoreDisplay.classList.add('visible');
         gameState = 'playing';
         
-        bird.x = canvas.width * 0.2;
-        bird.y = canvas.height / 2;
+        bird.x = window.innerWidth * 0.2;
+        bird.y = window.innerHeight / 2;
         bird.velocity = bird.jump;
         bird.rotation = -0.3;
         
@@ -254,8 +264,8 @@
         homeScreen.classList.remove('hidden');
         gameState = 'home';
         
-        bird.x = canvas.width / 2 - bird.width / 2;
-        bird.y = canvas.height * 0.35;
+        bird.x = window.innerWidth / 2 - bird.width / 2;
+        bird.y = window.innerHeight * 0.35;
         bird.rotation = 0;
         bird.velocity = 0;
     }
@@ -292,8 +302,8 @@
         for (let cloud of clouds) {
             cloud.x -= cloud.speed * (cloud.layer * 0.5);
             if (cloud.x + cloud.width < -50) {
-                cloud.x = canvas.width + Math.random() * 200;
-                cloud.y = Math.random() * canvas.height * 0.35;
+                cloud.x = window.innerWidth + Math.random() * 200;
+                cloud.y = Math.random() * window.innerHeight * 0.35;
             }
         }
         
@@ -301,7 +311,7 @@
         for (let hill of hills) {
             hill.x -= gameSpeed * 0.2;
             if (hill.x + hill.width < 0) {
-                hill.x = canvas.width;
+                hill.x = window.innerWidth;
                 hill.height = 80 + Math.random() * 120;
             }
         }
@@ -312,7 +322,7 @@
             if (s.opacity >= 1) { s.opacity = 1; s.opacityDir = -1; }
             if (s.opacity <= 0) { s.opacity = 0; s.opacityDir = 1; }
             s.y -= s.speed * 0.4;
-            if (s.y < 0) s.y = canvas.height * 0.9;
+            if (s.y < 0) s.y = window.innerHeight * 0.9;
         }
         
         // Particles
@@ -334,7 +344,7 @@
         }
         
         if (gameState === 'home') {
-            bird.y = canvas.height * 0.35 + Math.sin(frames * 0.025) * 12;
+            bird.y = window.innerHeight * 0.35 + Math.sin(frames * 0.025) * 12;
             bird.rotation = Math.sin(frames * 0.025) * 0.12;
             return;
         }
@@ -348,7 +358,7 @@
         let targetRotation = Math.min(Math.PI / 4, Math.max(-Math.PI / 3, bird.velocity * 0.06));
         bird.rotation += (targetRotation - bird.rotation) * 0.08;
         
-        let groundY = canvas.height - 100;
+        let groundY = window.innerHeight - 100;
         if (bird.y + bird.height >= groundY) {
             bird.y = groundY - bird.height;
             shakeDuration = 15;
@@ -392,10 +402,10 @@
     }
     
     function addPipe() {
-        let minY = canvas.height * 0.12;
-        let maxY = canvas.height - 100 - pipeGap - canvas.height * 0.12;
+        let minY = window.innerHeight * 0.12;
+        let maxY = window.innerHeight - 100 - pipeGap - window.innerHeight * 0.12;
         let y = minY + Math.random() * (maxY - minY);
-        pipes.push({ x: canvas.width, top: y, bottom: y + pipeGap, passed: false });
+        pipes.push({ x: window.innerWidth, top: y, bottom: y + pipeGap, passed: false });
     }
     
     function checkCollisions() {
@@ -438,13 +448,13 @@
         }
         
         // Sky
-        let skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        let skyGradient = ctx.createLinearGradient(0, 0, 0, window.innerHeight);
         skyGradient.addColorStop(0, '#87CEEB');
         skyGradient.addColorStop(0.3, '#B4E4FF');
         skyGradient.addColorStop(0.7, '#E0F6FF');
         skyGradient.addColorStop(1, '#98D8AA');
         ctx.fillStyle = skyGradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
         
         drawHills();
         drawClouds();
@@ -484,15 +494,15 @@
         for (let hill of hills) {
             ctx.fillStyle = hill.color;
             ctx.beginPath();
-            ctx.moveTo(hill.x, canvas.height - 100);
-            ctx.quadraticCurveTo(hill.x + hill.width / 2, canvas.height - 100 - hill.height * 1.5, hill.x + hill.width, canvas.height - 100);
+            ctx.moveTo(hill.x, window.innerHeight - 100);
+            ctx.quadraticCurveTo(hill.x + hill.width / 2, window.innerHeight - 100 - hill.height * 1.5, hill.x + hill.width, window.innerHeight - 100);
             ctx.closePath();
             ctx.fill();
             
             ctx.fillStyle = 'rgba(255,255,255,0.2)';
             ctx.beginPath();
-            ctx.moveTo(hill.x + hill.width * 0.3, canvas.height - 100);
-            ctx.quadraticCurveTo(hill.x + hill.width / 2, canvas.height - 100 - hill.height * 1.2, hill.x + hill.width * 0.6, canvas.height - 100);
+            ctx.moveTo(hill.x + hill.width * 0.3, window.innerHeight - 100);
+            ctx.quadraticCurveTo(hill.x + hill.width / 2, window.innerHeight - 100 - hill.height * 1.2, hill.x + hill.width * 0.6, window.innerHeight - 100);
             ctx.closePath();
             ctx.fill();
         }
@@ -516,7 +526,7 @@
         for (let p of pipes) {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
             ctx.fillRect(p.x + 8, 0, pipeWidth, p.top);
-            ctx.fillRect(p.x + 8, p.bottom, pipeWidth, canvas.height - p.bottom);
+            ctx.fillRect(p.x + 8, p.bottom, pipeWidth, window.innerHeight - p.bottom);
             
             let pg = ctx.createLinearGradient(p.x, 0, p.x + pipeWidth, 0);
             pg.addColorStop(0, '#4CAF50');
@@ -526,18 +536,18 @@
             
             ctx.fillRect(Math.floor(p.x), 0, Math.ceil(pipeWidth), Math.floor(p.top));
             ctx.fillRect(Math.floor(p.x) - 6, Math.floor(p.top) - capHeight, Math.ceil(pipeWidth) + 12, capHeight);
-            ctx.fillRect(Math.floor(p.x), Math.floor(p.bottom), Math.ceil(pipeWidth), canvas.height - Math.floor(p.bottom));
+            ctx.fillRect(Math.floor(p.x), Math.floor(p.bottom), Math.ceil(pipeWidth), window.innerHeight - Math.floor(p.bottom));
             ctx.fillRect(Math.floor(p.x) - 6, Math.floor(p.bottom), Math.ceil(pipeWidth) + 12, capHeight);
             
             ctx.fillStyle = 'rgba(255,255,255,0.3)';
             ctx.fillRect(Math.floor(p.x) + 4, 0, 6, Math.floor(p.top) - capHeight);
-            ctx.fillRect(Math.floor(p.x) + 4, Math.floor(p.bottom) + capHeight, 6, canvas.height - Math.floor(p.bottom));
+            ctx.fillRect(Math.floor(p.x) + 4, Math.floor(p.bottom) + capHeight, 6, window.innerHeight - Math.floor(p.bottom));
             ctx.fillRect(Math.floor(p.x) - 6, Math.floor(p.top) - capHeight, 6, capHeight);
             ctx.fillRect(Math.floor(p.x) - 6, Math.floor(p.bottom), 6, capHeight);
             
             ctx.fillStyle = 'rgba(0,0,0,0.2)';
             ctx.fillRect(Math.floor(p.x) + pipeWidth - 10, 0, 6, Math.floor(p.top) - capHeight);
-            ctx.fillRect(Math.floor(p.x) + pipeWidth - 10, Math.floor(p.bottom) + capHeight, 6, canvas.height - Math.floor(p.bottom));
+            ctx.fillRect(Math.floor(p.x) + pipeWidth - 10, Math.floor(p.bottom) + capHeight, 6, window.innerHeight - Math.floor(p.bottom));
             
             ctx.strokeStyle = 'rgba(0,0,0,0.15)';
             ctx.lineWidth = 2;
@@ -547,19 +557,19 @@
     }
     
     function drawGround() {
-        let groundY = canvas.height - 100;
-        let gg = ctx.createLinearGradient(0, groundY, 0, canvas.height);
+        let groundY = window.innerHeight - 100;
+        let gg = ctx.createLinearGradient(0, groundY, 0, window.innerHeight);
         gg.addColorStop(0, '#8B7355');
         gg.addColorStop(0.3, '#6B5344');
         gg.addColorStop(1, '#4A3728');
         ctx.fillStyle = gg;
-        ctx.fillRect(0, groundY, canvas.width, 100);
+        ctx.fillRect(0, groundY, window.innerWidth, 100);
         
         ctx.fillStyle = '#5DAA5D';
-        ctx.fillRect(0, groundY, canvas.width, 18);
+        ctx.fillRect(0, groundY, window.innerWidth, 18);
         
         ctx.fillStyle = '#4A9A4A';
-        for (let x = Math.floor(groundOffset); x < canvas.width; x += 20) {
+        for (let x = Math.floor(groundOffset); x < window.innerWidth; x += 20) {
             ctx.beginPath();
             ctx.moveTo(x, groundY + 18);
             ctx.lineTo(x + 4, groundY + 8);
@@ -568,10 +578,10 @@
         }
         
         ctx.fillStyle = '#6BC16B';
-        ctx.fillRect(0, groundY, canvas.width, 4);
+        ctx.fillRect(0, groundY, window.innerWidth, 4);
         
         ctx.fillStyle = 'rgba(0,0,0,0.15)';
-        for (let x = Math.floor(groundOffset); x < canvas.width; x += 50) {
+        for (let x = Math.floor(groundOffset); x < window.innerWidth; x += 50) {
             ctx.beginPath();
             ctx.arc(x + 15, groundY + 40, 4, 0, Math.PI * 2);
             ctx.arc(x + 35, groundY + 65, 3, 0, Math.PI * 2);
@@ -580,7 +590,7 @@
         }
         
         ctx.fillStyle = '#3D2914';
-        ctx.fillRect(0, groundY - 2, canvas.width, 2);
+        ctx.fillRect(0, groundY - 2, window.innerWidth, 2);
     }
     
     function drawParticles() {
