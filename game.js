@@ -1,7 +1,7 @@
 (function() {
     'use strict';
     
-   
+    // DOM Elements
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const homeScreen = document.getElementById('homeScreen');
@@ -14,14 +14,16 @@
     const finalScoreEl = document.getElementById('finalScore');
     const highScoreEl = document.getElementById('highScore');
     const previewBird = document.getElementById('previewBird');
-
+    
+    // Game State
     let gameState = 'loading';
     let score = 0;
     let highScore = localStorage.getItem('flappyFaceHighScore') || 0;
     let frames = 0;
     let gameSpeed = 4;
     let shakeDuration = 0;
-
+    
+    // Bird
     let bird = {
         x: 0,
         y: 0,
@@ -33,15 +35,18 @@
         rotation: 0,
         scale: 1
     };
-
+    
+    // Bird image
     let birdImage = null;
     let imageLoaded = false;
-  
+    
+    // Pipes
     let pipes = [];
     let pipeTimer = 0;
     let pipeWidth = 80;
     let pipeGap = 200;
-
+    
+    // Environment
     let clouds = [];
     let hills = [];
     let groundOffset = 0;
@@ -49,9 +54,9 @@
     let scorePopup = null;
     let stars = [];
     
-
+    // Initialize
     function init() {
-      
+        // Fix: explicitly hide game over on load
         gameOverScreen.style.display = 'none';
         gameOverScreen.classList.remove('visible');
 
@@ -135,6 +140,10 @@
         
         bird.width = Math.min(canvas.width * 0.22, 120);
         bird.height = bird.width;
+
+        // Scale jump and gravity to screen height so it feels consistent
+        bird.jump = -(canvas.height * 0.018);
+        bird.gravity = canvas.height * 0.0006;
         
         pipeWidth = Math.min(canvas.width * 0.12, 80);
         pipeGap = Math.max(canvas.height * 0.32, 190);
@@ -167,7 +176,7 @@
             });
         }
 
-
+        // Floating sparkle stars for home screen
         stars = [];
         const starColors = ['#FFD700', '#FF6B6B', '#74b9ff', '#a29bfe', '#55efc4', '#fd79a8'];
         for (let i = 0; i < 25; i++) {
@@ -278,7 +287,7 @@
         if (shakeDuration > 0) shakeDuration--;
         groundOffset = (groundOffset + gameSpeed) % 40;
         
-   
+        // Clouds
         for (let cloud of clouds) {
             cloud.x -= cloud.speed * (cloud.layer * 0.5);
             if (cloud.x + cloud.width < -50) {
@@ -287,6 +296,7 @@
             }
         }
         
+        // Hills
         for (let hill of hills) {
             hill.x -= gameSpeed * 0.2;
             if (hill.x + hill.width < 0) {
@@ -294,7 +304,8 @@
                 hill.height = 80 + Math.random() * 120;
             }
         }
-  
+
+        // Sparkle stars
         for (let s of stars) {
             s.opacity += s.opacityDir * 0.025;
             if (s.opacity >= 1) { s.opacity = 1; s.opacityDir = -1; }
@@ -303,6 +314,7 @@
             if (s.y < 0) s.y = canvas.height * 0.9;
         }
         
+        // Particles
         for (let i = particles.length - 1; i >= 0; i--) {
             let p = particles[i];
             p.x += p.vx;
@@ -313,6 +325,7 @@
             if (p.life <= 0 || p.size < 0.5) particles.splice(i, 1);
         }
         
+        // Score popup
         if (scorePopup) {
             scorePopup.y += scorePopup.vy;
             scorePopup.life--;
@@ -326,7 +339,8 @@
         }
         
         if (gameState === 'gameover' || gameState === 'loading') return;
-
+        
+        // Bird physics
         bird.velocity += bird.gravity;
         bird.y += bird.velocity;
         
@@ -347,7 +361,7 @@
             bird.velocity = 0;
         }
         
-
+        // Pipes
         pipeTimer++;
         let pipeInterval = Math.max(90, 120 - Math.floor(score / 5) * 5);
         if (pipeTimer >= pipeInterval) {
@@ -422,6 +436,7 @@
             ctx.translate((Math.random() - 0.5) * intensity, (Math.random() - 0.5) * intensity);
         }
         
+        // Sky
         let skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
         skyGradient.addColorStop(0, '#87CEEB');
         skyGradient.addColorStop(0.3, '#B4E4FF');
