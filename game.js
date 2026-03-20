@@ -30,7 +30,7 @@
         width: 100,
         height: 100,
         velocity: 0,
-        gravity: 0.38,
+        gravity: 0.5,
         jump: -6.5,
         rotation: 0,
         scale: 1
@@ -154,7 +154,7 @@
 
         // Fixed feel across all screen sizes
         bird.jump = -6.5;
-        bird.gravity = 0.38;
+        bird.gravity = 0.5;
         
         pipeWidth = Math.min(w * 0.12, 80);
         pipeGap = Math.max(h * 0.32, 190);
