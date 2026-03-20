@@ -31,7 +31,7 @@
         height: 100,
         velocity: 0,
         gravity: 0.28,
-        jump: -6,
+        jump: -7,
         rotation: 0,
         scale: 1
     };
@@ -143,7 +143,7 @@
         canvas.height = h * dpr;
         canvas.style.width = w + 'px';
         canvas.style.height = h + 'px';
-        ctx.scale(dpr, dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         // Use logical pixels for all game calculations
         canvas.logicalWidth = w;
@@ -153,7 +153,7 @@
         bird.height = bird.width;
 
         // Fixed feel across all screen sizes
-        bird.jump = -6;
+        bird.jump = -7;
         bird.gravity = 0.28;
         
         pipeWidth = Math.min(w * 0.12, 80);
