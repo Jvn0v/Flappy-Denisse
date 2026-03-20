@@ -30,8 +30,8 @@
         width: 100,
         height: 100,
         velocity: 0,
-        gravity: 0.28,
-        jump: -7,
+        gravity: 0.38,
+        jump: -6.5,
         rotation: 0,
         scale: 1
     };
@@ -153,8 +153,8 @@
         bird.height = bird.width;
 
         // Fixed feel across all screen sizes
-        bird.jump = -7;
-        bird.gravity = 0.28;
+        bird.jump = -6.5;
+        bird.gravity = 0.38;
         
         pipeWidth = Math.min(w * 0.12, 80);
         pipeGap = Math.max(h * 0.32, 190);
@@ -292,15 +292,15 @@
         scorePopup = { x, y, life: 60, vy: -2 };
     }
     
-    function update() {
+    function update(delta = 1) {
         frames++;
         
         if (shakeDuration > 0) shakeDuration--;
-        groundOffset = (groundOffset + gameSpeed) % 40;
+        groundOffset = (groundOffset + gameSpeed * delta) % 40;
         
         // Clouds
         for (let cloud of clouds) {
-            cloud.x -= cloud.speed * (cloud.layer * 0.5);
+            cloud.x -= cloud.speed * (cloud.layer * 0.5) * delta;
             if (cloud.x + cloud.width < -50) {
                 cloud.x = window.innerWidth + Math.random() * 200;
                 cloud.y = Math.random() * window.innerHeight * 0.35;
@@ -309,7 +309,7 @@
         
         // Hills
         for (let hill of hills) {
-            hill.x -= gameSpeed * 0.2;
+            hill.x -= gameSpeed * 0.2 * delta;
             if (hill.x + hill.width < 0) {
                 hill.x = window.innerWidth;
                 hill.height = 80 + Math.random() * 120;
@@ -321,25 +321,25 @@
             s.opacity += s.opacityDir * 0.025;
             if (s.opacity >= 1) { s.opacity = 1; s.opacityDir = -1; }
             if (s.opacity <= 0) { s.opacity = 0; s.opacityDir = 1; }
-            s.y -= s.speed * 0.4;
+            s.y -= s.speed * 0.4 * delta;
             if (s.y < 0) s.y = window.innerHeight * 0.9;
         }
         
         // Particles
         for (let i = particles.length - 1; i >= 0; i--) {
             let p = particles[i];
-            p.x += p.vx;
-            p.y += p.vy;
-            p.vy += 0.15;
-            p.life--;
+            p.x += p.vx * delta;
+            p.y += p.vy * delta;
+            p.vy += 0.15 * delta;
+            p.life -= delta;
             p.size *= 0.98;
             if (p.life <= 0 || p.size < 0.5) particles.splice(i, 1);
         }
         
         // Score popup
         if (scorePopup) {
-            scorePopup.y += scorePopup.vy;
-            scorePopup.life--;
+            scorePopup.y += scorePopup.vy * delta;
+            scorePopup.life -= delta;
             if (scorePopup.life <= 0) scorePopup = null;
         }
         
@@ -352,11 +352,11 @@
         if (gameState === 'gameover' || gameState === 'loading') return;
         
         // Bird physics
-        bird.velocity += bird.gravity;
-        bird.y += bird.velocity;
+        bird.velocity += bird.gravity * delta;
+        bird.y += bird.velocity * delta;
         
         let targetRotation = Math.min(Math.PI / 4, Math.max(-Math.PI / 3, bird.velocity * 0.06));
-        bird.rotation += (targetRotation - bird.rotation) * 0.08;
+        bird.rotation += (targetRotation - bird.rotation) * 0.08 * delta;
         
         let groundY = window.innerHeight - 100;
         if (bird.y + bird.height >= groundY) {
@@ -373,7 +373,7 @@
         }
         
         // Pipes
-        pipeTimer++;
+        pipeTimer += delta;
         let pipeInterval = Math.max(90, 120 - Math.floor(score / 5) * 5);
         if (pipeTimer >= pipeInterval) {
             pipeTimer = 0;
@@ -381,7 +381,7 @@
         }
         
         for (let i = pipes.length - 1; i >= 0; i--) {
-            pipes[i].x -= gameSpeed;
+            pipes[i].x -= gameSpeed * delta;
             
             if (!pipes[i].passed && pipes[i].x + pipeWidth < bird.x) {
                 pipes[i].passed = true;
@@ -676,8 +676,12 @@
         ctx.restore();
     }
     
-    function gameLoop() {
-        update();
+    let lastTime = 0;
+
+    function gameLoop(timestamp) {
+        const delta = Math.min((timestamp - lastTime) / (1000 / 60), 3); // normalize to 60fps
+        lastTime = timestamp;
+        update(delta);
         draw();
         requestAnimationFrame(gameLoop);
     }
