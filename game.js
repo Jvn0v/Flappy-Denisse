@@ -56,7 +56,7 @@
         gameOverScreen.classList.remove('visible');
 
         resize();
-        loadBirdImage("IMG_8201.png");
+        loadBirdImage("IMG_8201.PNG");
         initBackground();
         setupEventListeners();
         
